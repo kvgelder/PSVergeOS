@@ -159,7 +159,10 @@ function Set-VergeVM {
         [switch]$PassThru,
 
         [Parameter()]
-        [object]$Server
+        [object]$Server,
+
+	[Parameter()]
+	[bool]$AllowExport
     )
 
     begin {
@@ -306,6 +309,11 @@ function Set-VergeVM {
             $body['boot_delay'] = $BootDelay
             $changes.Add("Boot Delay: ${BootDelay}s")
         }
+	
+	if ($PSBoundParamters.ContainsKey('AllowExport')) {
+	    $body['allow_export'] = $AllowExport
+	    $changes.Add("Allow Export: $AllowExport")
+	}
 
         # Check if there are any changes to make
         if ($body.Count -eq 0) {
