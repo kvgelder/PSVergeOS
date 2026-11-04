@@ -310,7 +310,7 @@ function Set-VergeVM {
             $changes.Add("Boot Delay: ${BootDelay}s")
         }
 	
-	if ($PSBoundParamters.ContainsKey('AllowExport')) {
+	if ($PSBoundParameters.ContainsKey('AllowExport')) {
 	    $body['allow_export'] = $AllowExport
 	    $changes.Add("Allow Export: $AllowExport")
 	}

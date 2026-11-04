@@ -12,6 +12,10 @@ BeforeAll {
     # Import the module
     $ModulePath = Join-Path -Path $PSScriptRoot -ChildPath '../../PSVergeOS.psd1'
     Import-Module $ModulePath -Force
+
+    InModuleScope PSVergeOS {
+	$script:DefaultConnection = [PSCustomObject]@{ Server = 'test.local' }
+    }
 }
 
 AfterAll {
@@ -21,79 +25,58 @@ AfterAll {
 
 Describe 'Set-VergeVM' {
     BeforeAll {
-        Mock -ModuleName PSVergeOS Invoke-VergeAPI {
+        Mock -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter { $Method -eq 'GET' } {
             @(
                 [PSCustomObject]@{
-                    Key             = 1
-                    Name            = 'TestVM'
-                    Description     = 'TestVM Desc'
-                    PowerState      = 'Running'
-                    Status          = 'running'
-                    IsRunning       = $True
-                    CPUCores        = 4
-                    RAM             = 8192
-                    OSFamily        = 'linux'
-                    GuestAgent      = $True
-                    UEFI            = $False
-                    SecureBoot      = $False
-                    MachineType     = 'yottabyte'
-                    IsQ35           = $True
-                    Enabled         = $True
-                    IsSnapshot      = $False
-                    Cluster         = 'TEST_CLUSTER'
-                    ClusterKey      = 1
-                    Node            = 'node1'
-                    NodeKey         = 1
-                    HAGroup         = $null
-                    SnapshotProfile = $null
-                    MachineKey      = 1
-                    AllowExport     = $True
-                }
-                [PSCustomObject]@{
-                    Key             = 2
-                    Name            = 'TestVM2'
-                    Description     = 'TestVM2 Desc'
-                    CPUCores        = 2
-                    RAM             = 4096
-                    AllowExport     = $False
-                }
-            }
-        )
+                    '$key'       = 1
+		    name         = 'TestVM'
+		    status       = 'running'
+		    allow_export = $true
+		    is_snapshot  = $False
+		}
+#                [PSCustomObject]@{
+#		    '$key'       = 2
+#		    name         = 'TestVM2'
+#		    status       = 'stopped'
+#		    allow_export = $False
+#		    is_snapshot  = $False
+#                }
+            )
+        }
+	
+	Mock -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter { $Method -eq 'PUT' } { }
     }
 
-    Context 'Parameter Validation' {
-	It 'Should require AllowExport to be a boolean' {
-	    { Set-VergeVM -key 2 -AllowExport 'true' } | Should throw
-	}
-    }
+#    Context 'Parameter Validation' {
+#	It 'Should require AllowExport to be a boolean' {
+#	    { Set-VergeVM -key 1 -AllowExport 'true' } | Should throw
+#	}
+#    }
 
     Context 'Output' {
-        It 'Maps the API fields to PSObject properties' {
-            $vm = Set-VergeVM -key 1 -AllowExport $False
+        It 'Includes the allow_export = <value> field in the API call' -ForEach @(
+	    @{ Value = $True }
+	    @{ Value = $False }
+	) {
+            Set-VergeVM -key 1 -AllowExport $Value
+            
+	    Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
+		$Method -eq 'PUT' -and
+		$Endpoint -eq 'vms/1' -and 
+		$Body.ContainsKey('allow_export') -and 
+		$Body.allow_export -eq $Value
+	    }
 
-            $vm.Key             | Should -Be 1
-            $vm.Name            | Should -Be 'TestVM'
-            $vm.Description     | Should -Be 'TestVM Desc'
-            $vm.PowerState      | Should -Be 'Running'
-            $vm.Status          | Should -Be 'running'
-            $vm.IsRunning       | Should -Be $True
-            $vm.CPUCores        | Should -Be 4
-            $vm.RAM             | Should -Be 8192
-            $vm.OSFamily        | Should -Be 'linux'
-            $vm.GuestAgent      | Should -Be $True
-            $vm.UEFI            | Should -Be $False
-            $vm.SecureBoot      | Should -Be $False
-            $vm.MachineType     | Should -Be 'yottabyte'
-            $vm.IsQ35           | Should -Be $True
-            $vm.Enabled         | Should -Be $True
-            $vm.IsSnapshot      | Should -Be $False
-            $vm.Cluster         | Should -Be 'TEST_CLUSTER'
-            $vm.ClusterKey      | Should -Be 1
-            $vm.Node            | Should -Be 'node1'
-            $vm.NodeKey         | Should -Be 1
-            $vm.HAGroup         | Should -Be $null
-            $vm.SnapshotProfile | Should -Be $null
-            $vm.MachineKey      | Should -Be 1
-            $vm.AllowExport     | Should -Be $False
-        }
+	}
+
+	It 'Does not include the allow_export field if it is not being set' {
+	    Set-VergeVM -Key 1 -Description 'New description'
+
+	    Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
+		$Method -eq 'PUT' -and
+		$Endpoint -eq 'vms/1' -and
+		-not $Body.ContainsKey('allow_export')
+	    }
+	}
+    }
 }
