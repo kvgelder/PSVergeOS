@@ -14,7 +14,7 @@ BeforeAll {
     Import-Module $ModulePath -Force
 
     InModuleScope PSVergeOS {
-	$script:DefaultConnection = [PSCustomObject]@{ Server = 'test.local' }
+    $script:DefaultConnection = [PSCustomObject]@{ Server = 'test.local' }
     }
 }
 
@@ -29,54 +29,52 @@ Describe 'Set-VergeVM' {
             @(
                 [PSCustomObject]@{
                     '$key'       = 1
-		    name         = 'TestVM'
-		    status       = 'running'
-		    allow_export = $true
-		    is_snapshot  = $False
-		}
-#                [PSCustomObject]@{
-#		    '$key'       = 2
-#		    name         = 'TestVM2'
-#		    status       = 'stopped'
-#		    allow_export = $False
-#		    is_snapshot  = $False
-#                }
+                    name         = 'TestVM'
+                    status       = 'running'
+                    allow_export = $true
+                    is_snapshot  = $False
+                }
             )
         }
-	
-	Mock -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter { $Method -eq 'PUT' } { }
+    
+        Mock -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter { $Method -eq 'PUT' } { }
     }
 
-#    Context 'Parameter Validation' {
-#	It 'Should require AllowExport to be a boolean' {
-#	    { Set-VergeVM -key 1 -AllowExport 'true' } | Should throw
-#	}
-#    }
+    Context 'Parameter Validation' {
+        It 'Should require AllowExport to be a boolean' -ForEach @(
+            @{ Description = 'a string';            Value = 'true' }
+            @{ Description = 'a PSCustomObject';    Value = [PSCustomObject]@{ a = 1 } }
+            @{ Description = 'null';                Value = $null }
+        ) {
+            { Set-VergeVM -key 1 -AllowExport 'true' } | 
+                Should -Throw -ErrorId 'ParameterArgumentTransformationError*'
+        }
+    }
 
     Context 'Output' {
         It 'Includes the allow_export = <value> field in the API call' -ForEach @(
-	    @{ Value = $True }
-	    @{ Value = $False }
-	) {
+            @{ Value = $True }
+            @{ Value = $False }
+        ) {
             Set-VergeVM -key 1 -AllowExport $Value
             
-	    Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
-		$Method -eq 'PUT' -and
-		$Endpoint -eq 'vms/1' -and 
-		$Body.ContainsKey('allow_export') -and 
-		$Body.allow_export -eq $Value
-	    }
+            Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
+                $Method -eq 'PUT' -and
+                $Endpoint -eq 'vms/1' -and 
+                $Body.ContainsKey('allow_export') -and 
+                $Body.allow_export -eq $Value
+            }
 
-	}
+        }
 
-	It 'Does not include the allow_export field if it is not being set' {
-	    Set-VergeVM -Key 1 -Description 'New description'
+        It 'Does not include the allow_export field if it is not being set' {
+            Set-VergeVM -Key 1 -Description 'New description'
 
-	    Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
-		$Method -eq 'PUT' -and
-		$Endpoint -eq 'vms/1' -and
-		-not $Body.ContainsKey('allow_export')
-	    }
-	}
+            Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
+                $Method -eq 'PUT' -and
+                $Endpoint -eq 'vms/1' -and
+                -not $Body.ContainsKey('allow_export')
+            }
+        }
     }
 }

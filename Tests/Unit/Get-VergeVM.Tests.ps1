@@ -14,7 +14,7 @@ BeforeAll {
     Import-Module $ModulePath -Force
 
     InModuleScope PSVergeOS {
-	$script:DefaultConnection = [PSCustomObject]@{ Server = 'test.local' }
+        $script:DefaultConnection = [PSCustomObject]@{ Server = 'test.local' }
     }
 }
 
@@ -28,15 +28,15 @@ Describe 'Get-VergeVM' {
         Mock -ModuleName PSVergeOS Invoke-VergeAPI {
             @(
                 [PSCustomObject]@{
-                    '$key' 	    = 1
-		    name 	    = 'TestVM'
-		    status 	    = 'running'
-		    allow_export    = $True
+                    '$key'          = 1
+                    name            = 'TestVM'
+                    status          = 'running'
+                    allow_export    = $True
                 }
                 [PSCustomObject]@{
                     '$key'          = 2
                     name            = 'TestVM2'
-		    status	    = 'stopped'
+                    status          = 'stopped'
                     allow_export    = $False
                 }
             )
@@ -51,16 +51,16 @@ Describe 'Get-VergeVM' {
         It 'Maps allow_export to AllowExport' {
             $vms = Get-VergeVM
 
-	    ($vms | Where-Object Name -eq 'TestVM').AllowExport     | Should -Be $True
-	    ($vms | Where-Object Name -eq 'TestVM2').AllowExport    | Should -Be $False
+            ($vms | Where-Object Name -eq 'TestVM').AllowExport     | Should -Be $True
+            ($vms | Where-Object Name -eq 'TestVM2').AllowExport    | Should -Be $False
         }
 
-	It 'Requests the allow_export field from the API' {
-	    Get-VergeVM | Out-Null
+        It 'Requests the allow_export field from the API' {
+            Get-VergeVM | Out-Null
 
-	    Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
-		($Query.fields -split ',') -contains 'allow_export'
-	    }
-	}
+            Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
+                ($Query.fields -split ',') -contains 'allow_export'
+            }
+        }
     }
 }
