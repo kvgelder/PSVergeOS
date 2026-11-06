@@ -172,7 +172,7 @@ function Get-VergeVM {
             'machine#ha_group as ha_group'
             'machine#snapshot_profile as snapshot_profile'
             'machine#snapshot_profile#name as snapshot_profile_name'
-	    'allow_export'
+	        'allow_export'
         ) -join ','
 
         try {
@@ -255,7 +255,7 @@ function Get-VergeVM {
                     MachineKey       = $vm.machine
                     Created          = if ($vm.created) { [DateTimeOffset]::FromUnixTimeSeconds($vm.created).LocalDateTime } else { $null }
                     Modified         = if ($vm.modified) { [DateTimeOffset]::FromUnixTimeSeconds($vm.modified).LocalDateTime } else { $null }
-		    AllowExport	     = [bool]$vm.allow_export
+		            AllowExport	     = [bool]$vm.allow_export
                 }
 
                 # Add hidden properties for pipeline support
