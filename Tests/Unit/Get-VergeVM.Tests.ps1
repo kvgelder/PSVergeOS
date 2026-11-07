@@ -27,23 +27,6 @@ Describe 'Get-VergeVM' {
     BeforeAll {
         $vmFixture = Get-Content "$PSScriptRoot/Fixtures/vms.json" -Raw | ConvertFrom-Json
         Mock -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter { $Method -eq 'GET' } { $vmFixture }
-        
-#        Mock -ModuleName PSVergeOS Invoke-VergeAPI {
-#            @(
-#                [PSCustomObject]@{
-#                    '$key'          = 1
-#                    name            = 'TestVM'
-#                    status          = 'running'
-#                    allow_export    = $True
-#                }
-#                [PSCustomObject]@{
-#                    '$key'          = 2
-#                    name            = 'TestVM2'
-#                    status          = 'stopped'
-#                    allow_export    = $False
-#                }
-#            )
-#        }
     }
 
     Context 'Output' {
@@ -58,12 +41,46 @@ Describe 'Get-VergeVM' {
             ($vms | Where-Object Name -eq 'LAB-VM2').AllowExport    | Should -Be $False
         }
 
-        It 'Requests the allow_export field from the API' {
+        It 'Requests the <Field> field fields from the API' -ForEach @(
+            @{ Field = 'allow_export' }
+            @{ Field = 'owner_user' }
+            @{ Field = 'boot_delay' }
+            @{ Field = 'nested_virtualization' }
+            @{ Field = 'note' }
+        ) {
             Get-VergeVM | Out-Null
 
             Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
-                ($Query.fields -split ',') -contains 'allow_export'
+                ($Query.fields -split ',') -contains $Field
             }
+        }
+
+        It 'Maps allow_export to AllowExport' {
+            $vms = Get-VergeVM
+
+            ($vms | Where-Object Name -eq 'LAB-VM1').AllowExport    | Should -Be $True
+            ($vms | Where-Object Name -eq 'LAB-VM2').AllowExport    | Should -Be $False
+        }
+
+        It 'Maps owner_user to OwnerUser' {
+            $vms = Get-VergeVM
+
+            ($vms | Where-Object Name -eq 'LAB-VM1').OwnerUser      | Should -Be 1
+            ($vms | Where-Object Name -eq 'LAB-VM2').OwnerUser      | Should -Be $Null 
+        }
+
+        It 'Maps boot_delay to BootDelay' {
+            $vms = Get-VergeVM
+
+            ($vms | Where-Object Name -eq 'LAB-VM1').BootDelay      | Should -Be 5
+            ($vms | Where-Object Name -eq 'LAB-VM2').BootDelay      | Should -Be 20
+        }
+        
+        It 'Maps nexted_virtualization to NestedVirtualization' {
+            $vms = Get-VergeVM
+
+            ($vms | Where-Object Name -eq 'LAB-VM1').NestedVirtualization   | Should -Be $True
+            ($vms | Where-Object Name -eq 'LAB-VM2').NestedVirtualization   | Should -Be $False
         }
     }
 }

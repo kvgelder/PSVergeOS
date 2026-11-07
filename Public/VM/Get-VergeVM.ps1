@@ -173,7 +173,6 @@ function Get-VergeVM {
             'machine#snapshot_profile as snapshot_profile'
             'machine#snapshot_profile#name as snapshot_profile_name'
 	        'allow_export'
-
             'owner'
             'owner_user'
             'boot_delay'
@@ -213,21 +212,21 @@ function Get-VergeVM {
 
                 # Map status to user-friendly PowerState
                 $powerStateDisplay = switch ($vm.status) {
-                    'running'      { 'Running' }
-                    'stopped'      { 'Stopped' }
-                    'hibernated'   { 'Hibernated' }
-                    'stopping'     { 'Stopping' }
-                    'starting'     { 'Starting' }
-                    'initializing' { 'Starting' }
-                    'migrating'    { 'Migrating' }
-                    'initmigrate'  { 'Migrating' }
-                    'startmigrate' { 'Migrating' }
-                    'migratecomplete' { 'Migrating' }
-                    'unresponsive' { 'Unresponsive' }
-                    'error'        { 'Error' }
-                    'maintenance'  { 'Maintenance' }
-                    'hibernating'  { 'Hibernating' }
-                    default        { $vm.status }
+                    'running'           { 'Running' }
+                    'stopped'           { 'Stopped' }
+                    'hibernated'        { 'Hibernated' }
+                    'stopping'          { 'Stopping' }
+                    'starting'          { 'Starting' }
+                    'initializing'      { 'Starting' }
+                    'migrating'         { 'Migrating' }
+                    'initmigrate'       { 'Migrating' }
+                    'startmigrate'      { 'Migrating' }
+                    'migratecomplete'   { 'Migrating' }
+                    'unresponsive'      { 'Unresponsive' }
+                    'error'             { 'Error' }
+                    'maintenance'       { 'Maintenance' }
+                    'hibernating'       { 'Hibernating' }
+                    default             { $vm.status }
                 }
 
                 # Determine if VM uses Q35 chipset (vs i440FX)
@@ -262,8 +261,6 @@ function Get-VergeVM {
                     Created                 = if ($vm.created) { [DateTimeOffset]::FromUnixTimeSeconds($vm.created).LocalDateTime } else { $null }
                     Modified                = if ($vm.modified) { [DateTimeOffset]::FromUnixTimeSeconds($vm.modified).LocalDateTime } else { $null }
 		            AllowExport	            = [bool]$vm.allow_export
-
-                    Owner                   = $vm.owner
                     OwnerUser               = $vm.owner_user
                     BootDelay               = [int]$vm.boot_delay
                     NestedVirtualization    = [bool]$vm.nested_virtualization

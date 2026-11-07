@@ -61,15 +61,9 @@ function Set-VergeVM {
 
     .PARAMETER Server
         The VergeOS connection to use. Defaults to the current default connection.
-    
+
     .PARAMETER AllowExport
         Enable or disable allow export.
-
-    .PARAMETER Owner
-        Set the owner of the VM.
-
-    .PARAMETER OwnerUser
-        Set the owner user.
 
     .PARAMETER Note
         Set the note field.
@@ -174,18 +168,11 @@ function Set-VergeVM {
         [object]$Server,
 
 	    [Parameter()]
-	    [bool]$AllowExport
+	    [bool]$AllowExport,
 
-        # Needs to be implemented
         [Parameter()]
-        [string]$Owner
-        
-        [Parameter()]
-        [string]$OwnerUser
-        
-        [Parameter()]
-        [bool]$NestedVirtualization
-        
+        [bool]$NestedVirtualization,
+
         [Parameter()]
         [string]$Note
     )
@@ -334,11 +321,21 @@ function Set-VergeVM {
             $body['boot_delay'] = $BootDelay
             $changes.Add("Boot Delay: ${BootDelay}s")
         }
-	
+
 	    if ($PSBoundParameters.ContainsKey('AllowExport')) {
 	        $body['allow_export'] = $AllowExport
 	        $changes.Add("Allow Export: $AllowExport")
 	    }
+
+        if ($PSBoundParameters.ContainsKey('NestedVirtualization')) {
+            $body['nested_virtualization'] = $NestedVirtualization
+            $changes.Add("Nested Virtualization: $NestedVirtualization")
+        }
+
+        if ($PSBoundParameters.ContainsKey('Note')) {
+            $body['note'] = $Note
+            $changes.Add("Note: $Note")
+        }
 
         # Check if there are any changes to make
         if ($body.Count -eq 0) {

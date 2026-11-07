@@ -10,7 +10,7 @@
     "modified": 1794075425,
     "is_snapshot": false,
     "owner": null,
-    "owner_user": null,
+    "owner_user": 1,
     "machine_type": "pc-q35-11.0",
     "allow_hotplug": true,
     "guest_agent": true,
@@ -537,7 +537,7 @@
     "allow_export": true,
     "paste_key_config": null,
     "creator": "admin",
-    "nested_virtualization": false,
+    "nested_virtualization": true,
     "iommu": false,
     "disable_hypervisor": false,
     "usb_legacy": false,
@@ -575,7 +575,7 @@
     "uefi": false,
     "secure_boot": false,
     "serial_port": false,
-    "boot_delay": 5,
+    "boot_delay": 20,
     "meta": {
       "recipe": [
         {
