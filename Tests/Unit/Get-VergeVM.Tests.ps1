@@ -24,23 +24,26 @@ AfterAll {
 }
 
 Describe 'Get-VergeVM' {
-    BeforeAll { 
-        Mock -ModuleName PSVergeOS Invoke-VergeAPI {
-            @(
-                [PSCustomObject]@{
-                    '$key'          = 1
-                    name            = 'TestVM'
-                    status          = 'running'
-                    allow_export    = $True
-                }
-                [PSCustomObject]@{
-                    '$key'          = 2
-                    name            = 'TestVM2'
-                    status          = 'stopped'
-                    allow_export    = $False
-                }
-            )
-        }
+    BeforeAll {
+        $vmFixture = Get-Content "$PSScriptRoot/Fixtures/vms.json" -Raw | ConvertFrom-Json
+        Mock -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter { $Method -eq 'GET' } { $vmFixture }
+        
+#        Mock -ModuleName PSVergeOS Invoke-VergeAPI {
+#            @(
+#                [PSCustomObject]@{
+#                    '$key'          = 1
+#                    name            = 'TestVM'
+#                    status          = 'running'
+#                    allow_export    = $True
+#                }
+#                [PSCustomObject]@{
+#                    '$key'          = 2
+#                    name            = 'TestVM2'
+#                    status          = 'stopped'
+#                    allow_export    = $False
+#                }
+#            )
+#        }
     }
 
     Context 'Output' {
@@ -51,8 +54,8 @@ Describe 'Get-VergeVM' {
         It 'Maps allow_export to AllowExport' {
             $vms = Get-VergeVM
 
-            ($vms | Where-Object Name -eq 'TestVM').AllowExport     | Should -Be $True
-            ($vms | Where-Object Name -eq 'TestVM2').AllowExport    | Should -Be $False
+            ($vms | Where-Object Name -eq 'LAB-VM1').AllowExport    | Should -Be $True
+            ($vms | Where-Object Name -eq 'LAB-VM2').AllowExport    | Should -Be $False
         }
 
         It 'Requests the allow_export field from the API' {

@@ -61,6 +61,18 @@ function Set-VergeVM {
 
     .PARAMETER Server
         The VergeOS connection to use. Defaults to the current default connection.
+    
+    .PARAMETER AllowExport
+        Enable or disable allow export.
+
+    .PARAMETER Owner
+        Set the owner of the VM.
+
+    .PARAMETER OwnerUser
+        Set the owner user.
+
+    .PARAMETER Note
+        Set the note field.
 
     .EXAMPLE
         Set-VergeVM -Name "WebServer01" -CPUCores 8 -RAM 16384
@@ -163,6 +175,19 @@ function Set-VergeVM {
 
 	    [Parameter()]
 	    [bool]$AllowExport
+
+        # Needs to be implemented
+        [Parameter()]
+        [string]$Owner
+        
+        [Parameter()]
+        [string]$OwnerUser
+        
+        [Parameter()]
+        [bool]$NestedVirtualization
+        
+        [Parameter()]
+        [string]$Note
     )
 
     begin {

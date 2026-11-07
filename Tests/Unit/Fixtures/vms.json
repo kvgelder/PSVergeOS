@@ -1,0 +1,1092 @@
+[
+  {
+    "$key": 33,
+    "name": "LAB-VM1",
+    "machine": 42,
+    "recipe_instance": 1,
+    "description": "",
+    "enabled": true,
+    "created": 1794074993,
+    "modified": 1794075425,
+    "is_snapshot": false,
+    "owner": null,
+    "owner_user": null,
+    "machine_type": "pc-q35-11.0",
+    "allow_hotplug": true,
+    "guest_agent": true,
+    "disable_powercycle": false,
+    "cpu_cores": 1,
+    "cpu_type": "Broadwell",
+    "ram": 1024,
+    "console": "vnc",
+    "video": "virtio",
+    "sound": "none",
+    "os_family": "linux",
+    "os_description": "",
+    "rtc_base": "utc",
+    "boot_order": "cd",
+    "console_pass_enabled": false,
+    "usb_tablet": true,
+    "uefi": false,
+    "secure_boot": false,
+    "serial_port": false,
+    "boot_delay": 5,
+    "meta": {
+      "recipe": [
+        {
+          "name": "Virtual Machine",
+          "description": "",
+          "questions": [
+            {
+              "name": "YB_CPU_CORES",
+              "normalize": 1,
+              "display": "Cores",
+              "on_change": [],
+              "min": 1,
+              "enabled": true,
+              "type": "num",
+              "default": "2",
+              "max": 128,
+              "system": true,
+              "required": false
+            },
+            {
+              "name": "YB_RAM",
+              "normalize": 256,
+              "display": "RAM",
+              "on_change": [],
+              "min": 256,
+              "enabled": true,
+              "type": "ram",
+              "default": "2048",
+              "max": 1048576,
+              "system": true,
+              "required": false
+            },
+            {
+              "name": "YB_CLUSTER",
+              "required": false,
+              "display": "Cluster",
+              "on_change": [],
+              "normalize": 0,
+              "system": true,
+              "type": "cluster",
+              "hide_none": true,
+              "enabled": true
+            },
+            {
+              "name": "HOSTNAME",
+              "postprocess_string": "lowercase",
+              "display": "Hostname",
+              "on_change": [],
+              "enabled": true,
+              "normalize": 0,
+              "type": "string",
+              "system": false,
+              "readonly": true,
+              "regex": "[a-zA-Z]([a-zA-Z0-9_-]+[a-zA-Z0-9])?",
+              "required": true,
+              "min": 1
+            },
+            {
+              "name": "SELECT_CREATE_UEFI",
+              "required": false,
+              "display": "Enable UEFI",
+              "on_change": [],
+              "enabled": true,
+              "system": false,
+              "type": "bool",
+              "normalize": 0
+            },
+            {
+              "name": "YB_DISABLE_CLOUDINIT",
+              "normalize": 0,
+              "display": "Disable Cloud-init after first boot",
+              "on_change": [],
+              "enabled": true,
+              "note": "Valid values are 'true', 'false', or 'purge' (which will delete all cloud-init files)",
+              "type": "hidden",
+              "default": "purge",
+              "system": true,
+              "list": {
+                "true": "On",
+                "false": "Off",
+                "purge": "Disable and purge all files"
+              },
+              "required": false
+            },
+            {
+              "name": "YB_DETACH_RECIPE",
+              "list": {
+                "true": "On",
+                "false": "Off",
+                "firstboot": "On First Boot",
+                "guestagent": "When Guest Agent Connects"
+              },
+              "display": "Detach Recipe Instance",
+              "on_change": [],
+              "enabled": true,
+              "note": "After this recipe instance is created, it is detached from the recipe.  Valid values are 'true', 'false', 'firstboot', or 'guestagent'",
+              "type": "hidden",
+              "default": "guestagent",
+              "readonly": true,
+              "system": true,
+              "required": false,
+              "normalize": 0
+            }
+          ]
+        },
+        {
+          "name": "Network",
+          "description": "",
+          "questions": [
+            {
+              "name": "YB_IP_ADDR_TYPE",
+              "normalize": 0,
+              "display": "Select the IP Address Type",
+              "on_change": {
+                "static": {
+                  "fGen3.hidden": false,
+                  "YB_NIC_ETH0.value": "__none__"
+                },
+                "dhcp": {
+                  "fGen3.hidden": true
+                }
+              },
+              "required": false,
+              "enabled": true,
+              "type": "list",
+              "default": "dhcp",
+              "list": {
+                "dhcp": "DHCP",
+                "static": "Static"
+              },
+              "system": false
+            },
+            {
+              "name": "YB_NIC_ETH0",
+              "normalize": 0,
+              "display": "Network (eth0)",
+              "on_change": {
+                "__new_internal__": {
+                  "YB_NIC_ETH0_INTERNAL_GATEWAY.hidden": false,
+                  "YB_NIC_ETH0_INTERNAL_GATEWAY.value": "__first__"
+                },
+                "__else__": {
+                  "YB_NIC_ETH0_INTERNAL_GATEWAY.hidden": true
+                }
+              },
+              "required": false,
+              "filter": "(type eq 'external' or type eq 'internal' or type eq 'vpn') and enabled eq true",
+              "type": "network",
+              "default": "__new_internal__",
+              "system": true,
+              "enabled": true
+            },
+            {
+              "name": "YB_NIC_ETH0_INTERNAL_GATEWAY",
+              "normalize": 0,
+              "display": "New internal network's gateway (eth0)",
+              "on_change": [],
+              "required": false,
+              "note": "The newly created internal network will use this network to be it's default gateway",
+              "type": "network",
+              "filter": "type eq 'external' and enabled eq true",
+              "system": true,
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "Drives",
+          "description": "",
+          "questions": [
+            {
+              "name": "YB_DRIVE_OS_SIZE",
+              "normalize": 0,
+              "display": "OS Drive Size",
+              "on_change": [],
+              "system": false,
+              "enabled": true,
+              "type": "disksize",
+              "default": "53687091200",
+              "required": false
+            },
+            {
+              "name": "SELECT_OS_TIER",
+              "normalize": 0,
+              "display": "OS Drive Tier",
+              "on_change": [],
+              "enabled": true,
+              "filter": "tier ne 0",
+              "type": "row",
+              "fields": "$key,tier as $display,tier",
+              "system": false,
+              "table": "storage_tiers",
+              "required": false,
+              "hide_none": true
+            }
+          ]
+        },
+        {
+          "name": "Static IP Configuration",
+          "description": "",
+          "questions": [
+            {
+              "name": "YB_NIC_ETH0_IP_ADDR",
+              "normalize": 0,
+              "display": "IP address (eth0)",
+              "on_change": [],
+              "enabled": true,
+              "system": true,
+              "type": "string",
+              "default": "auto",
+              "readonly": true,
+              "regex": "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0))|auto$",
+              "required": false
+            },
+            {
+              "name": "YB_NIC_ETH0_CIDR",
+              "normalize": 0,
+              "display": "Subnet Mask CIDR",
+              "on_change": [],
+              "required": false,
+              "enabled": true,
+              "type": "list",
+              "default": "/24",
+              "list": {
+                "/32": "/32",
+                "/31": "/31",
+                "/30": "/30",
+                "/29": "/29",
+                "/28": "/28",
+                "/27": "/27",
+                "/26": "/26",
+                "/25": "/25",
+                "/24": "/24",
+                "/23": "/23",
+                "/22": "/22",
+                "/21": "/21",
+                "/20": "/20",
+                "/19": "/19",
+                "/18": "/18",
+                "/17": "/17",
+                "/16": "/16",
+                "/15": "/15",
+                "/14": "/14",
+                "/13": "/13",
+                "/12": "/12",
+                "/11": "/11",
+                "/10": "/10",
+                "/9": "/9",
+                "/8": "/8",
+                "/7": "/7",
+                "/6": "/6",
+                "/5": "/5",
+                "/4": "/4",
+                "/3": "/3",
+                "/2": "/2",
+                "/1": "/1"
+              },
+              "system": false
+            },
+            {
+              "name": "YB_NIC_ETH0_GW",
+              "normalize": 0,
+              "display": "Default Gateway",
+              "hint": "192.168.100.1",
+              "on_change": [],
+              "required": false,
+              "type": "string",
+              "enabled": true,
+              "system": false,
+              "regex": "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0))?$"
+            },
+            {
+              "name": "YB_NIC_ETH0_NS",
+              "enabled": true,
+              "display": "Nameservers",
+              "hint": "8.8.8.8, 1.1.1.1",
+              "on_change": [],
+              "note": "2 nameservers are required  (comma delimited)",
+              "type": "string",
+              "normalize": 0,
+              "readonly": true,
+              "regex": "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0))?[,]?[ ]?((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0))?$",
+              "required": false,
+              "system": false
+            }
+          ]
+        },
+        {
+          "name": "User Configuration",
+          "description": "",
+          "questions": [
+            {
+              "name": "USER",
+              "postprocess_string": "lowercase",
+              "display": "User Name",
+              "hint": "cloud",
+              "on_change": [],
+              "enabled": true,
+              "type": "string",
+              "normalize": 0,
+              "readonly": true,
+              "system": false,
+              "required": true,
+              "min": 1
+            },
+            {
+              "name": "PASSWORD",
+              "normalize": 0,
+              "display": "Password",
+              "on_change": [],
+              "enabled": true,
+              "system": false,
+              "type": "password",
+              "postprocess_string": "crypt-sha512",
+              "readonly": true,
+              "autocomplete": "current-password",
+              "required": true
+            },
+            {
+              "name": "SSH_KEY",
+              "normalize": 0,
+              "display": "SSH Key",
+              "hint": "ssh-rsa AAAA....................",
+              "on_change": [],
+              "note": "ssh public key for this user",
+              "type": "textarea",
+              "enabled": true,
+              "readonly": true,
+              "system": false,
+              "required": false
+            }
+          ]
+        },
+        {
+          "name": "$database",
+          "description": "",
+          "questions": [
+            {
+              "name": "CREATE_OS_DRIVE",
+              "required": false,
+              "display": "API - Create OS Drive",
+              "list": {
+                "machine": "${YB_MACHINE_KEY}",
+                "name": "OS",
+                "description": "${YB_NAME} OS Drive",
+                "media": "import",
+                "importurl": "${OS_DL_URL}",
+                "importurlcache": true,
+                "interface": "virtio-scsi",
+                "minsize": "${YB_DRIVE_OS_SIZE}",
+                "asset": "os",
+                "preferred_tier": "${SELECT_OS_TIER:tier}"
+              },
+              "on_change": [],
+              "enabled": true,
+              "type": "database_create",
+              "default": "machine_drives",
+              "system": false,
+              "normalize": 0
+            },
+            {
+              "name": "EDIT_UEFI",
+              "normalize": 0,
+              "display": "Enable UEFI in VM",
+              "system": false,
+              "on_change": [],
+              "enabled": true,
+              "type": "database_edit",
+              "default": "vms/${YB_VM_KEY}",
+              "list": {
+                "uefi": "true"
+              },
+              "conditions": {
+                "version": "1.0",
+                "conditions": {
+                  "SELECT_CREATE_UEFI": "equals:true"
+                }
+              },
+              "required": false
+            },
+            {
+              "name": "CREATE_UEFI_DISK",
+              "normalize": 0,
+              "display": "API - Create UEFI Disk",
+              "system": false,
+              "on_change": [],
+              "enabled": true,
+              "type": "database_create",
+              "default": "machine_drives",
+              "list": {
+                "machine": "${YB_MACHINE_KEY}",
+                "media": "efidisk",
+                "interface": "pflash",
+                "description": "${YB_NAME} UEFI Disk",
+                "asset": "uefi",
+                "name": "UEFI"
+              },
+              "conditions": {
+                "version": "1.0",
+                "conditions": {
+                  "SELECT_CREATE_UEFI": "equals:true"
+                }
+              },
+              "required": false
+            },
+            {
+              "name": "SET_CONSOLE",
+              "normalize": 0,
+              "display": "API - Set the console type",
+              "system": false,
+              "on_change": [],
+              "enabled": true,
+              "type": "database_edit",
+              "default": "vms/${YB_VM_KEY}",
+              "list": {
+                "console": "vnc",
+                "video": "virtio"
+              },
+              "conditions": {
+                "version": "1.0",
+                "conditions": {
+                  "SELECT_CREATE_UEFI": "notequals:true"
+                }
+              },
+              "required": false
+            },
+            {
+              "name": "OS_DL_URL",
+              "normalize": 0,
+              "display": "Cloud Image URL",
+              "enabled": true,
+              "on_change": [],
+              "required": false,
+              "type": "hidden",
+              "default": "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2",
+              "system": false
+            },
+            {
+              "name": "VM_TIMEZONE",
+              "required": false,
+              "display": "Set TZ in VM",
+              "list": {
+                "fields": "timezone"
+              },
+              "on_change": [],
+              "enabled": true,
+              "type": "database_find",
+              "default": "system/self",
+              "system": false,
+              "normalize": 0
+            },
+            {
+              "name": "GET_CLUSTER_CPU",
+              "required": false,
+              "display": "API - Get Cluster CPU",
+              "list": {
+                "fields": "default_cpu"
+              },
+              "on_change": [],
+              "enabled": true,
+              "type": "database_find",
+              "default": "clusters/${YB_CLUSTER}",
+              "system": false,
+              "normalize": 0
+            },
+            {
+              "name": "CHANGE_CLUSTER_CPU",
+              "required": false,
+              "display": "API - Change Cluster CPU",
+              "list": {
+                "cpu_type": "${GET_CLUSTER_CPU:default_cpu}"
+              },
+              "on_change": [],
+              "enabled": true,
+              "type": "database_edit",
+              "default": "vms/${YB_VM_KEY}",
+              "system": false,
+              "normalize": 0
+            }
+          ]
+        }
+      ],
+      "recipe_version": "1.0",
+      "recipe_build": 17,
+      "recipe_assets": {
+        "nics": {
+          "ETH0": "ETH0"
+        }
+      },
+      "recipe_question_assets": true,
+      "recipe_yb_version": "26.1.6"
+    },
+    "uuid": "49a4dbe3-a684-e42d-16d5-8082cca12a08",
+    "advanced": "",
+    "need_restart": false,
+    "console_status": 34,
+    "cloudinit_datasource": "nocloud",
+    "service": null,
+    "imported": false,
+    "created_from": "recipe",
+    "migration_method": "auto",
+    "note": "",
+    "power_cycle_timeout": 0,
+    "allow_export": true,
+    "paste_key_config": null,
+    "creator": "admin",
+    "nested_virtualization": false,
+    "iommu": false,
+    "disable_hypervisor": false,
+    "usb_legacy": false,
+    "vgamem_mb": "default",
+    "bios_serial": ""
+  },
+  {
+    "$key": 34,
+    "name": "LAB-VM2",
+    "machine": 43,
+    "recipe_instance": 2,
+    "description": "",
+    "enabled": true,
+    "created": 1794075910,
+    "modified": 1794075916,
+    "is_snapshot": false,
+    "owner": null,
+    "owner_user": null,
+    "machine_type": "pc-q35-11.0",
+    "allow_hotplug": true,
+    "guest_agent": true,
+    "disable_powercycle": false,
+    "cpu_cores": 1,
+    "cpu_type": "Broadwell",
+    "ram": 1024,
+    "console": "vnc",
+    "video": "virtio",
+    "sound": "none",
+    "os_family": "linux",
+    "os_description": "",
+    "rtc_base": "utc",
+    "boot_order": "cd",
+    "console_pass_enabled": false,
+    "usb_tablet": true,
+    "uefi": false,
+    "secure_boot": false,
+    "serial_port": false,
+    "boot_delay": 5,
+    "meta": {
+      "recipe": [
+        {
+          "name": "Virtual Machine",
+          "description": "",
+          "questions": [
+            {
+              "name": "YB_CPU_CORES",
+              "normalize": 1,
+              "display": "Cores",
+              "on_change": [],
+              "min": 1,
+              "enabled": true,
+              "type": "num",
+              "default": "2",
+              "max": 128,
+              "system": true,
+              "required": false
+            },
+            {
+              "name": "YB_RAM",
+              "normalize": 256,
+              "display": "RAM",
+              "on_change": [],
+              "min": 256,
+              "enabled": true,
+              "type": "ram",
+              "default": "2048",
+              "max": 1048576,
+              "system": true,
+              "required": false
+            },
+            {
+              "name": "YB_CLUSTER",
+              "required": false,
+              "display": "Cluster",
+              "on_change": [],
+              "normalize": 0,
+              "system": true,
+              "type": "cluster",
+              "hide_none": true,
+              "enabled": true
+            },
+            {
+              "name": "HOSTNAME",
+              "postprocess_string": "lowercase",
+              "display": "Hostname",
+              "on_change": [],
+              "enabled": true,
+              "normalize": 0,
+              "type": "string",
+              "system": false,
+              "readonly": true,
+              "regex": "[a-zA-Z]([a-zA-Z0-9_-]+[a-zA-Z0-9])?",
+              "required": true,
+              "min": 1
+            },
+            {
+              "name": "SELECT_CREATE_UEFI",
+              "required": false,
+              "display": "Enable UEFI",
+              "on_change": [],
+              "enabled": true,
+              "system": false,
+              "type": "bool",
+              "normalize": 0
+            },
+            {
+              "name": "YB_DISABLE_CLOUDINIT",
+              "normalize": 0,
+              "display": "Disable Cloud-init after first boot",
+              "on_change": [],
+              "enabled": true,
+              "note": "Valid values are 'true', 'false', or 'purge' (which will delete all cloud-init files)",
+              "type": "hidden",
+              "default": "purge",
+              "system": true,
+              "list": {
+                "true": "On",
+                "false": "Off",
+                "purge": "Disable and purge all files"
+              },
+              "required": false
+            },
+            {
+              "name": "YB_DETACH_RECIPE",
+              "list": {
+                "true": "On",
+                "false": "Off",
+                "firstboot": "On First Boot",
+                "guestagent": "When Guest Agent Connects"
+              },
+              "display": "Detach Recipe Instance",
+              "on_change": [],
+              "enabled": true,
+              "note": "After this recipe instance is created, it is detached from the recipe.  Valid values are 'true', 'false', 'firstboot', or 'guestagent'",
+              "type": "hidden",
+              "default": "guestagent",
+              "readonly": true,
+              "system": true,
+              "required": false,
+              "normalize": 0
+            }
+          ]
+        },
+        {
+          "name": "Network",
+          "description": "",
+          "questions": [
+            {
+              "name": "YB_IP_ADDR_TYPE",
+              "normalize": 0,
+              "display": "Select the IP Address Type",
+              "on_change": {
+                "static": {
+                  "fGen3.hidden": false,
+                  "YB_NIC_ETH0.value": "__none__"
+                },
+                "dhcp": {
+                  "fGen3.hidden": true
+                }
+              },
+              "required": false,
+              "enabled": true,
+              "type": "list",
+              "default": "dhcp",
+              "list": {
+                "dhcp": "DHCP",
+                "static": "Static"
+              },
+              "system": false
+            },
+            {
+              "name": "YB_NIC_ETH0",
+              "normalize": 0,
+              "display": "Network (eth0)",
+              "on_change": {
+                "__new_internal__": {
+                  "YB_NIC_ETH0_INTERNAL_GATEWAY.hidden": false,
+                  "YB_NIC_ETH0_INTERNAL_GATEWAY.value": "__first__"
+                },
+                "__else__": {
+                  "YB_NIC_ETH0_INTERNAL_GATEWAY.hidden": true
+                }
+              },
+              "required": false,
+              "filter": "(type eq 'external' or type eq 'internal' or type eq 'vpn') and enabled eq true",
+              "type": "network",
+              "default": "__new_internal__",
+              "system": true,
+              "enabled": true
+            },
+            {
+              "name": "YB_NIC_ETH0_INTERNAL_GATEWAY",
+              "normalize": 0,
+              "display": "New internal network's gateway (eth0)",
+              "on_change": [],
+              "required": false,
+              "note": "The newly created internal network will use this network to be it's default gateway",
+              "type": "network",
+              "filter": "type eq 'external' and enabled eq true",
+              "system": true,
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "Drives",
+          "description": "",
+          "questions": [
+            {
+              "name": "YB_DRIVE_OS_SIZE",
+              "normalize": 0,
+              "display": "OS Drive Size",
+              "on_change": [],
+              "system": false,
+              "enabled": true,
+              "type": "disksize",
+              "default": "53687091200",
+              "required": false
+            },
+            {
+              "name": "SELECT_OS_TIER",
+              "normalize": 0,
+              "display": "OS Drive Tier",
+              "on_change": [],
+              "enabled": true,
+              "filter": "tier ne 0",
+              "type": "row",
+              "fields": "$key,tier as $display,tier",
+              "system": false,
+              "table": "storage_tiers",
+              "required": false,
+              "hide_none": true
+            }
+          ]
+        },
+        {
+          "name": "Static IP Configuration",
+          "description": "",
+          "questions": [
+            {
+              "name": "YB_NIC_ETH0_IP_ADDR",
+              "normalize": 0,
+              "display": "IP address (eth0)",
+              "on_change": [],
+              "enabled": true,
+              "system": true,
+              "type": "string",
+              "default": "auto",
+              "readonly": true,
+              "regex": "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0))|auto$",
+              "required": false
+            },
+            {
+              "name": "YB_NIC_ETH0_CIDR",
+              "normalize": 0,
+              "display": "Subnet Mask CIDR",
+              "on_change": [],
+              "required": false,
+              "enabled": true,
+              "type": "list",
+              "default": "/24",
+              "list": {
+                "/32": "/32",
+                "/31": "/31",
+                "/30": "/30",
+                "/29": "/29",
+                "/28": "/28",
+                "/27": "/27",
+                "/26": "/26",
+                "/25": "/25",
+                "/24": "/24",
+                "/23": "/23",
+                "/22": "/22",
+                "/21": "/21",
+                "/20": "/20",
+                "/19": "/19",
+                "/18": "/18",
+                "/17": "/17",
+                "/16": "/16",
+                "/15": "/15",
+                "/14": "/14",
+                "/13": "/13",
+                "/12": "/12",
+                "/11": "/11",
+                "/10": "/10",
+                "/9": "/9",
+                "/8": "/8",
+                "/7": "/7",
+                "/6": "/6",
+                "/5": "/5",
+                "/4": "/4",
+                "/3": "/3",
+                "/2": "/2",
+                "/1": "/1"
+              },
+              "system": false
+            },
+            {
+              "name": "YB_NIC_ETH0_GW",
+              "normalize": 0,
+              "display": "Default Gateway",
+              "hint": "192.168.100.1",
+              "on_change": [],
+              "required": false,
+              "type": "string",
+              "enabled": true,
+              "system": false,
+              "regex": "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0))?$"
+            },
+            {
+              "name": "YB_NIC_ETH0_NS",
+              "enabled": true,
+              "display": "Nameservers",
+              "hint": "8.8.8.8, 1.1.1.1",
+              "on_change": [],
+              "note": "2 nameservers are required  (comma delimited)",
+              "type": "string",
+              "normalize": 0,
+              "readonly": true,
+              "regex": "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0))?[,]?[ ]?((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0))?$",
+              "required": false,
+              "system": false
+            }
+          ]
+        },
+        {
+          "name": "User Configuration",
+          "description": "",
+          "questions": [
+            {
+              "name": "USER",
+              "postprocess_string": "lowercase",
+              "display": "User Name",
+              "hint": "cloud",
+              "on_change": [],
+              "enabled": true,
+              "type": "string",
+              "normalize": 0,
+              "readonly": true,
+              "system": false,
+              "required": true,
+              "min": 1
+            },
+            {
+              "name": "PASSWORD",
+              "normalize": 0,
+              "display": "Password",
+              "on_change": [],
+              "enabled": true,
+              "system": false,
+              "type": "password",
+              "postprocess_string": "crypt-sha512",
+              "readonly": true,
+              "autocomplete": "current-password",
+              "required": true
+            },
+            {
+              "name": "SSH_KEY",
+              "normalize": 0,
+              "display": "SSH Key",
+              "hint": "ssh-rsa AAAA....................",
+              "on_change": [],
+              "note": "ssh public key for this user",
+              "type": "textarea",
+              "enabled": true,
+              "readonly": true,
+              "system": false,
+              "required": false
+            }
+          ]
+        },
+        {
+          "name": "$database",
+          "description": "",
+          "questions": [
+            {
+              "name": "CREATE_OS_DRIVE",
+              "required": false,
+              "display": "API - Create OS Drive",
+              "list": {
+                "machine": "${YB_MACHINE_KEY}",
+                "name": "OS",
+                "description": "${YB_NAME} OS Drive",
+                "media": "import",
+                "importurl": "${OS_DL_URL}",
+                "importurlcache": true,
+                "interface": "virtio-scsi",
+                "minsize": "${YB_DRIVE_OS_SIZE}",
+                "asset": "os",
+                "preferred_tier": "${SELECT_OS_TIER:tier}"
+              },
+              "on_change": [],
+              "enabled": true,
+              "type": "database_create",
+              "default": "machine_drives",
+              "system": false,
+              "normalize": 0
+            },
+            {
+              "name": "EDIT_UEFI",
+              "normalize": 0,
+              "display": "Enable UEFI in VM",
+              "system": false,
+              "on_change": [],
+              "enabled": true,
+              "type": "database_edit",
+              "default": "vms/${YB_VM_KEY}",
+              "list": {
+                "uefi": "true"
+              },
+              "conditions": {
+                "version": "1.0",
+                "conditions": {
+                  "SELECT_CREATE_UEFI": "equals:true"
+                }
+              },
+              "required": false
+            },
+            {
+              "name": "CREATE_UEFI_DISK",
+              "normalize": 0,
+              "display": "API - Create UEFI Disk",
+              "system": false,
+              "on_change": [],
+              "enabled": true,
+              "type": "database_create",
+              "default": "machine_drives",
+              "list": {
+                "machine": "${YB_MACHINE_KEY}",
+                "media": "efidisk",
+                "interface": "pflash",
+                "description": "${YB_NAME} UEFI Disk",
+                "asset": "uefi",
+                "name": "UEFI"
+              },
+              "conditions": {
+                "version": "1.0",
+                "conditions": {
+                  "SELECT_CREATE_UEFI": "equals:true"
+                }
+              },
+              "required": false
+            },
+            {
+              "name": "SET_CONSOLE",
+              "normalize": 0,
+              "display": "API - Set the console type",
+              "system": false,
+              "on_change": [],
+              "enabled": true,
+              "type": "database_edit",
+              "default": "vms/${YB_VM_KEY}",
+              "list": {
+                "console": "vnc",
+                "video": "virtio"
+              },
+              "conditions": {
+                "version": "1.0",
+                "conditions": {
+                  "SELECT_CREATE_UEFI": "notequals:true"
+                }
+              },
+              "required": false
+            },
+            {
+              "name": "OS_DL_URL",
+              "normalize": 0,
+              "display": "Cloud Image URL",
+              "enabled": true,
+              "on_change": [],
+              "required": false,
+              "type": "hidden",
+              "default": "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2",
+              "system": false
+            },
+            {
+              "name": "VM_TIMEZONE",
+              "required": false,
+              "display": "Set TZ in VM",
+              "list": {
+                "fields": "timezone"
+              },
+              "on_change": [],
+              "enabled": true,
+              "type": "database_find",
+              "default": "system/self",
+              "system": false,
+              "normalize": 0
+            },
+            {
+              "name": "GET_CLUSTER_CPU",
+              "required": false,
+              "display": "API - Get Cluster CPU",
+              "list": {
+                "fields": "default_cpu"
+              },
+              "on_change": [],
+              "enabled": true,
+              "type": "database_find",
+              "default": "clusters/${YB_CLUSTER}",
+              "system": false,
+              "normalize": 0
+            },
+            {
+              "name": "CHANGE_CLUSTER_CPU",
+              "required": false,
+              "display": "API - Change Cluster CPU",
+              "list": {
+                "cpu_type": "${GET_CLUSTER_CPU:default_cpu}"
+              },
+              "on_change": [],
+              "enabled": true,
+              "type": "database_edit",
+              "default": "vms/${YB_VM_KEY}",
+              "system": false,
+              "normalize": 0
+            }
+          ]
+        }
+      ],
+      "recipe_version": "1.0",
+      "recipe_build": 17,
+      "recipe_assets": {
+        "nics": {
+          "ETH0": "ETH0"
+        }
+      },
+      "recipe_question_assets": true,
+      "recipe_yb_version": "26.1.6"
+    },
+    "uuid": "d8b96b26-1645-7074-b00e-58b09a8518b2",
+    "advanced": "",
+    "need_restart": false,
+    "console_status": 35,
+    "cloudinit_datasource": "nocloud",
+    "service": null,
+    "imported": false,
+    "created_from": "recipe",
+    "migration_method": "auto",
+    "note": "",
+    "power_cycle_timeout": 0,
+    "allow_export": false,
+    "paste_key_config": null,
+    "creator": "admin",
+    "nested_virtualization": false,
+    "iommu": false,
+    "disable_hypervisor": false,
+    "usb_legacy": false,
+    "vgamem_mb": "default",
+    "bios_serial": ""
+  }
+]
