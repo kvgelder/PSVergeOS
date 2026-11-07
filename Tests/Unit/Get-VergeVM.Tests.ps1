@@ -82,5 +82,12 @@ Describe 'Get-VergeVM' {
             ($vms | Where-Object Name -eq 'LAB-VM1').NestedVirtualization   | Should -Be $True
             ($vms | Where-Object Name -eq 'LAB-VM2').NestedVirtualization   | Should -Be $False
         }
+
+        It 'Maps note to Note' {
+            $vms = Get-VergeVM
+
+            ($vms | Where-Object Name -eq 'LAB-VM1').Note   | Should -Be "Testing this note`nnew lines as well?`nMaybe..."
+            ($vms | Where-Object Name -eq 'LAB-VM2').Note   | Should -Be ""
+        }
     }
 }

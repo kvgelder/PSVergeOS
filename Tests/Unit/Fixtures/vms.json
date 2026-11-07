@@ -532,7 +532,7 @@
     "imported": false,
     "created_from": "recipe",
     "migration_method": "auto",
-    "note": "",
+    "note": "Testing this note\nnew lines as well?\nMaybe...",
     "power_cycle_timeout": 0,
     "allow_export": true,
     "paste_key_config": null,
