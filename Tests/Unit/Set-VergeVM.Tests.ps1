@@ -44,36 +44,56 @@ Describe 'Set-VergeVM' {
         It 'Should require AllowExport to be a boolean' -ForEach @(
             @{ Description = 'a string';            Value = 'true' }
             @{ Description = 'a PSCustomObject';    Value = [PSCustomObject]@{ a = 1 } }
-            @{ Description = 'null';                Value = $null }
+            @{ Description = 'null';                Value = $Null }
         ) {
-            { Set-VergeVM -key 1 -AllowExport 'true' } | 
+            { Set-VergeVM -key 1 -AllowExport $Value } | 
+                Should -Throw -ErrorId 'ParameterArgumentTransformationError*'
+        }
+
+        It 'Should require NestedVirtualization to be a boolean' -ForEach @(
+            @{ Description = 'a string';            Value = 'true' }
+            @{ Description = 'a PSCustomObject';    Value = [PSCustomObject]@{ a = 1 } }
+            @{ Description = 'null';                Value = $Null }
+        ) {
+            { Set-VergeVM -Key 1 -NestedVirtualization $Value } |
                 Should -Throw -ErrorId 'ParameterArgumentTransformationError*'
         }
     }
 
     Context 'Output' {
-        It 'Includes the allow_export = <value> field in the API call' -ForEach @(
-            @{ Value = $True }
-            @{ Value = $False }
+        It 'Includes the <field> = <value> field in the API call' -ForEach @(
+            @{ Field = 'allow_export';              Params = 'AllowExport';                 Value = $True }
+            @{ Field = 'allow_export';              Params = 'AllowExport';                 Value = $False }
+            @{ Field = 'nested_virtualization';     Params = 'NestedVirtualization';        Value = $True }
+            @{ Field = 'nested_virtualization';     Params = 'NestedVirtualization';        Value = $False }
+            @{ Field = 'note';                      Params = 'Note';                        Value = 'Testing`nmultiline text.' }
+            @{ Field = 'note';                      Params = 'Note';                        Value = '' }
+            @{ Field = 'note';                      Params = 'Note';                        Value = $True }
+            @{ Field = 'note';                      Params = 'Note';                        Value = [PSCustomObject]@{ a = 1 } }
         ) {
-            Set-VergeVM -key 1 -AllowExport $Value
+            $arg = @{ $Params = $Value }
+            Set-VergeVM -key 1 @arg
             
             Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
                 $Method -eq 'PUT' -and
                 $Endpoint -eq 'vms/1' -and 
-                $Body.ContainsKey('allow_export') -and 
-                $Body.allow_export -eq $Value
+                $Body.ContainsKey($Field) -and 
+                $Body.$Field -eq $Value
             }
 
         }
 
-        It 'Does not include the allow_export field if it is not being set' {
+        It 'Does not include the <field> field if it is not being set' -ForEach @(
+            @{ Field = 'allow_export' }
+            @{ Field = 'nested_virtualization' }
+            @{ Field = 'note' }
+        ) {
             Set-VergeVM -Key 1 -Description 'New description'
 
             Should -Invoke -ModuleName PSVergeOS Invoke-VergeAPI -ParameterFilter {
                 $Method -eq 'PUT' -and
                 $Endpoint -eq 'vms/1' -and
-                -not $Body.ContainsKey('allow_export')
+                -not $Body.ContainsKey($Field)
             }
         }
     }
