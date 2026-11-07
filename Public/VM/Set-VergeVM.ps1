@@ -63,10 +63,13 @@ function Set-VergeVM {
         The VergeOS connection to use. Defaults to the current default connection.
 
     .PARAMETER AllowExport
-        Enable or disable allow export.
+        Enable or disable allow export for a VM.
+
+    .PARAMETER NestedVirtualization
+        Enable or disable nested virtualization in a VM.
 
     .PARAMETER Note
-        Set the note field.
+        Set the note field for a VM.
 
     .EXAMPLE
         Set-VergeVM -Name "WebServer01" -CPUCores 8 -RAM 16384
